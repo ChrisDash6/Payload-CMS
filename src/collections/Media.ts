@@ -1,16 +1,44 @@
-import type { CollectionConfig } from 'payload'
+import { CollectionConfig } from 'payload';
 
-export const Media: CollectionConfig = {
+const Media: CollectionConfig = {
   slug: 'media',
+  upload: {
+    staticDir: 'media',
+    mimeTypes: [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png',
+    ],
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 200,
+        height: 200,
+        position: 'center',
+      },
+    ],
+    adminThumbnail: 'thumbnail',
+  },
   access: {
-    read: () => true,
+    create: ({ req }) => true,
+    read: ({ req }) => {
+      const role = req.user?.role;
+      return role === 'admin' || role === 'reviewer';
+    },
+    update: ({ req }) => req.user?.role === 'admin',
+    delete: ({ req }) => req.user?.role === 'admin',
+  },
+  admin: {
+    useAsTitle: 'filename',
   },
   fields: [
     {
       name: 'alt',
       type: 'text',
-      required: true,
+      label: 'Alt Text',
     },
   ],
-  upload: true,
-}
+};
+
+export default Media;
